@@ -7,9 +7,9 @@ const createEmployer = async (req, res) => {
   try {
 
     const schema = Yup.object().shape({
-      name: Yup.string().required(),
-      description: Yup.string().required(),
-      userId: Yup.string().required()
+      name: Yup.string().required("This field is required"),
+      description: Yup.string().required("This field is required"),
+      userId: Yup.number().required("This field is required")
     });
 
     await schema.validate(req.body);
@@ -24,6 +24,15 @@ const createEmployer = async (req, res) => {
       return res.status(400).send("Employer already exists");
     }
     
+    const user = await prisma.User.findUnique({
+      where:{
+        id: userId,
+      },
+    });
+
+    if(!user.roles.includes("Employer")){
+      return res.status(400).send("You don't have the necessary permissions to create an employer profile");
+    }
 
     const newEmployer = await prisma.Employer.create({
       data: {

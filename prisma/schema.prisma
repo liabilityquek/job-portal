@@ -3,7 +3,7 @@ model User {
   email        String    @unique
   password     String
   name         String?
-  roles        Role[]    @default([USER])
+  roles        Role[]    @default([Candidate])
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
   profile      Profile?  
@@ -120,8 +120,8 @@ model PastSearch {
 }
 
 enum Role{
-  USER
-  ADMIN
+  Candidate
+  Employer
 }
 datasource db {
   provider = "postgresql"

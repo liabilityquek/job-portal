@@ -19,8 +19,8 @@ const createUser = async (req, res) => {
           "Password must contain: 1 uppercase, 1 lowercase, 1 number, and 1 special character"
         )
         .required(),
-      name: Yup.string().required(),
-      roles: Yup.string().required(),
+      name: Yup.string().required("This field is required"),
+      roles: Yup.string().required("This field is required"),
     });
 
     await schema.validate(req.body);
