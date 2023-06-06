@@ -1,0 +1,133 @@
+model User {
+  id           Int       @id @default(autoincrement())
+  email        String    @unique
+  password     String
+  name         String?
+  roles        Role[]    @default([USER])
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  profile      Profile?  
+  employer     Employer?
+
+}
+
+model Skill {
+  id           Int           @id @default(autoincrement())
+  name         String        @unique
+  profile      Profile[]     @relation("ProfileToSkill")
+  jobPosts     JobPost[]     @relation("JobPostToSkill")
+}
+
+model Profile {
+  id              Int       @id @default(autoincrement())
+  userId          Int       @unique
+  user            User      @relation(fields: [userId], references: [id])
+  isOpentoWork    Boolean   @default(true)
+  resumeUrl       String?
+  coverLetterUrl  String?
+  skills          Skill[]   @relation("ProfileToSkill")
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  applications    Application[]
+  savedJobs       SavedJob[]
+  pastSearches    PastSearch[]
+  JobAnswer       JobAnswer[]
+}
+
+model JobPost {
+  id            Int           @id @default(autoincrement())
+  title         String
+  description   String
+  location      String
+  salary        String?
+  employerId    Int
+  isActive      Boolean       @default(true)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  employer      Employer      @relation(fields: [employerId], references: [id])
+  applications  Application[]
+  savedJobs     SavedJob[]
+  jobQuestions  JobQuestion[]
+  JobAnswer     JobAnswer[]   
+  skills        Skill[]       @relation("JobPostToSkill")
+}
+
+model Employer {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique 
+  userId      Int?     @unique ()
+  imageUrl    String? 
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User?    @relation(fields: [userId], references: [id])
+  jobPosts    JobPost[]
+  jobQuestion JobQuestion[]
+}
+
+model JobQuestion {
+  id          Int         @id @default(autoincrement())
+  jobPostId   Int
+  title       String
+  employerId  Int
+  description String
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  employer    Employer    @relation(fields: [employerId], references: [id])
+  jobPosts    JobPost     @relation(fields: [jobPostId], references: [id], onDelete: Cascade)
+  JobAnswer   JobAnswer[] 
+}
+
+model JobAnswer {
+  id          Int           @id @default(autoincrement())
+  questionId  Int
+  jobPostId   Int           
+  profileId   Int
+  answer      String
+  createdAt   DateTime      @default(now())
+  jobQuestion JobQuestion   @relation(fields: [questionId], references: [id])
+  profile     Profile       @relation(fields: [profileId], references: [id])
+  jobPost     JobPost       @relation(fields: [jobPostId], references: [id], onDelete: Cascade) 
+}
+
+model Application {
+  id        Int      @id @default(autoincrement())
+  profileId Int
+  jobPostId Int
+  profile   Profile  @relation(fields: [profileId], references: [id])
+  jobPost   JobPost  @relation(fields: [jobPostId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SavedJob {
+  id        Int      @id @default(autoincrement())
+  profileId Int
+  jobPostId Int
+  profile   Profile  @relation(fields: [profileId], references: [id])
+  jobPost   JobPost  @relation(fields: [jobPostId], references: [id], onDelete: NoAction)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PastSearch {
+  id         Int      @id @default(autoincrement())
+  profileId Int
+  profile   Profile  @relation(fields: [profileId], references: [id])
+  query      String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+enum Role{
+  USER
+  ADMIN
+}
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
