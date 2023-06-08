@@ -2,3 +2,4 @@ https://www.prisma.io/docs/concepts/components/prisma-client/crud#read
 https://ianodad.medium.com/building-a-mvc-application-with-nextjs-and-prisma-a4be9276b9f2
 https://www.prisma.io/docs/getting-started/setup-prisma/start-from-scratch/relational-databases/querying-the-database-typescript-postgresql
 https://www.freecodecamp.org/news/build-a-full-stack-application-with-nextjs/
+https://stackoverflow.com/questions/71172521/unable-to-filter-an-array-inside-of-a-related-model-with-prisma-2

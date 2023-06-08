@@ -257,7 +257,9 @@ const getAllJobPost = async (req, res) => {
       },
     });
     if (!findAllJob && !findAllJob.employerId !== Number(employerId)) {
-      return res.status(404).send("You do not have the permission to view this Job Posts");
+      return res
+        .status(404)
+        .send("You do not have the permission to view this Job Posts");
     }
     if (findAllJob.length === 0) {
       return res.status(200).send("No job/s found");
@@ -289,8 +291,10 @@ const getSingleJobPost = async (req, res) => {
       },
     });
     if (findSingleJob.employerId !== Number(employerId) && !findSingleJob) {
-      return res.status(404).send("You do not have the permission to view this Job Post");
-    }else {
+      return res
+        .status(404)
+        .send("You do not have the permission to view this Job Post");
+    } else {
       res.status(201).json(findSingleJob);
     }
   } catch (e) {
@@ -362,6 +366,42 @@ const getJobPostApplicationWithSkills = async (req, res) => {
   }
 };
 
+const getAllCandidates = async (req, res) => {
+  try {
+    const profiles = await prisma.Profile.findMany({
+      where: {
+        isOpentoWork: true,
+      },
+      include: {
+        user: true,
+      },
+      AND:[
+        {
+          roles:{
+            contains: 'Candidate'
+          }
+        }
+      ]
+    });
+
+    // const showAllCandidates = profiles.filter(profile => 
+    //   profile.user && profile.user.roles && profile.user.roles.includes('Candidate')
+    // );
+
+    if (profiles.length === 0) {
+      return res.status(200).json({ message: "No candidates found" });
+    }
+
+    res.status(200).json(profiles);
+  } catch (e) {
+    console.error(e);
+    res
+      .status(500)
+      .json({ error: "An error occurred while fetching candidates" });
+  }
+};
+
+
 module.exports = {
   createEmployer,
   amendJobPost,
@@ -369,5 +409,6 @@ module.exports = {
   createJobPost,
   deleteJobPost,
   getJobPostApplicationWithSkills,
-  getSingleJobPost
+  getSingleJobPost,
+  getAllCandidates,
 };

@@ -11,6 +11,6 @@ router.put("/amend-job/:employerId/:id",  employerController.amendJobPost);
 router.get("/show-jobs/:employerId",  employerController.getAllJobPost);
 router.get("/show-jobs/:employerId/:id",  employerController.getSingleJobPost);
 router.get("/show-jobs-application/:employerId/:id",  employerController.getJobPostApplicationWithSkills);
-
+router.get("/show-all-candidates",  employerController.getAllCandidates);
 
 module.exports = router;

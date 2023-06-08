@@ -19,24 +19,6 @@ const getAllJobPost = async (req, res) => {
   }
 };
 
-const createJobAns = async (req, res) => {
-  try {
-    const { answer, questionId, jobPostId, userId } = req.body
-    const newJobAns = await prisma.JobAnswer.create({
-      data: {
-        answer,
-        questionId,
-        jobPostId,
-        userId
-      },
-    });
-    res.status(201).json(newJobAns);
-  } catch (e) {
-    console.log("error: ", e);
-    res.status(500).send("Error submitting job answer");
-  }
-};
-
 const createApplication = async (req, res) => {
   try {
     const { userId, jobPostId } = req.body;
@@ -64,24 +46,6 @@ const createApplication = async (req, res) => {
   }
 };
 
-const getJobQns = async (req, res) => {
-  try {
-    const jobQns = await prisma.JobQuestion.findUnique({
-      where: {
-        id: Number(req.params.id),
-      },
-    });
-    if (!jobQns) {
-      return res.status(404).send("Job question not found");
-    } else {
-      res.status(201).json(jobQns);
-    }
-  } catch (e) {
-    console.log("error", e);
-    res.status(500).send("Error getting job question");
-  }
-};
-
 const getJobPost = async (req, res) => {
   const { id, postedBy } = req.params;
   try {
@@ -104,7 +68,6 @@ const getJobPost = async (req, res) => {
 
 module.exports = {
   getAllJobPost,
-  createJobAns,
   createApplication,
-  getJobQns
+  getJobPost
 };
