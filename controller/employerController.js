@@ -42,6 +42,7 @@ const createEmployer = async (req, res) => {
         userId
       },
     });
+
     res.status(201).json(newEmployer);
   } catch (e) {
     if (e instanceof Yup.ValidationError) {

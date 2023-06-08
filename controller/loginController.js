@@ -5,6 +5,7 @@ const jwt = require("jsonwebtoken");
 const JWT_SECRET = process.env.JWT_SECRET;
 const SALT_ROUNDS = 10;
 const Yup = require("yup");
+const sendEmail = require("../nodemailer/index");
 
 const createUser = async (req, res) => {
   const { email, password, name, roles } = req.body;
@@ -43,6 +44,22 @@ const createUser = async (req, res) => {
         roles,
       },
     });
+
+    if(newUser.roles.includes('Candidate')){
+    await sendEmail({
+      email: newUser.email,
+      subject: "Welcome HAR ORA - Account Registration",
+      templateName: "registration_candidate", // The name of the template file without extension
+      templateVariables: { name: newUser.name }, // The variables to replace in the template
+    });
+  }else{
+    await sendEmail({
+      email: newUser.email,
+      subject: "Welcome HAR ORA - Account Registration",
+      templateName: "registration_employer", // The name of the template file without extension
+      templateVariables: { name: newUser.name }, // The variables to replace in the template
+    });
+  }
 
     res.status(201).json(newUser);
   } catch (e) {
