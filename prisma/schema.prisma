@@ -1,103 +1,81 @@
 model User {
-  id           Int       @id @default(autoincrement())
-  email        String    @unique
-  password     String
-  name         String?
-  roles        Role[]    @default([Candidate])
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  profile      Profile?  
-  employer     Employer?
-
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  password  String
+  name      String?
+  roles     Role[]    @default([Candidate])
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  profile   Profile?
+  employer  Employer?
 }
 
 model Skill {
-  id           Int           @id @default(autoincrement())
-  name         String        @unique
-  profile      Profile[]     @relation("ProfileToSkill")
-  jobPosts     JobPost[]     @relation("JobPostToSkill")
+  id       Int       @id @default(autoincrement())
+  name     String    @unique
+  profile  Profile[] @relation("ProfileToSkill")
+  jobPosts JobPost[] @relation("JobPostToSkill")
 }
 
 model Profile {
-  id              Int       @id @default(autoincrement())
-  userId          Int       @unique
-  user            User      @relation(fields: [userId], references: [id])
-  isOpentoWork    Boolean   @default(true)
-  resumeUrl       String?
-  coverLetterUrl  String?
-  skills          Skill[]   @relation("ProfileToSkill")
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  applications    Application[]
-  savedJobs       SavedJob[]
-  pastSearches    PastSearch[]
-  JobAnswer       JobAnswer[]
+  id             Int           @id @default(autoincrement())
+  userId         Int           @unique
+  user           User          @relation(fields: [userId], references: [id])
+  isOpentoWork   Boolean       @default(true)
+  resumeUrl      String?
+  coverLetterUrl String?
+  skills         Skill[]       @relation("ProfileToSkill")
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  applications   Application[]
+  savedJobs      SavedJob[]
+  pastSearches   PastSearch[]
 }
 
 model JobPost {
-  id            Int           @id @default(autoincrement())
-  title         String
-  description   String
-  location      String
-  salary        String?
-  employerId    Int
-  isActive      Boolean       @default(true)
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-  employer      Employer      @relation(fields: [employerId], references: [id])
-  applications  Application[]
-  savedJobs     SavedJob[]
-  jobQuestions  JobQuestion[]
-  JobAnswer     JobAnswer[]   
-  skills        Skill[]       @relation("JobPostToSkill")
+  id           Int           @id @default(autoincrement())
+  title        String
+  description  String
+  requirements String
+  location     String
+  salary       String
+  employerId   Int
+  isActive     Boolean       @default(true)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  employer     Employer      @relation(fields: [employerId], references: [id])
+  jobLevel     JobLevel
+  jobFunction  JobFunction
+  employment   Employment
+  applications Application[]
+  savedJobs    SavedJob[]
+  skills       Skill[]       @relation("JobPostToSkill")
 }
 
 model Employer {
-  id          Int      @id @default(autoincrement())
-  name        String   @unique 
-  userId      Int?     @unique ()
-  imageUrl    String? 
-  description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  user        User?    @relation(fields: [userId], references: [id])
-  jobPosts    JobPost[]
-  jobQuestion JobQuestion[]
-}
-
-model JobQuestion {
-  id          Int         @id @default(autoincrement())
-  jobPostId   Int
-  title       String
-  employerId  Int
-  description String
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  employer    Employer    @relation(fields: [employerId], references: [id])
-  jobPosts    JobPost     @relation(fields: [jobPostId], references: [id], onDelete: Cascade)
-  JobAnswer   JobAnswer[] 
-}
-
-model JobAnswer {
   id          Int           @id @default(autoincrement())
-  questionId  Int
-  jobPostId   Int           
-  profileId   Int
-  answer      String
+  name        String        @unique
+  userId      Int?          @unique()
+  imageUrl    String?
+  description String?
+  location    String?
   createdAt   DateTime      @default(now())
-  jobQuestion JobQuestion   @relation(fields: [questionId], references: [id])
-  profile     Profile       @relation(fields: [profileId], references: [id])
-  jobPost     JobPost       @relation(fields: [jobPostId], references: [id], onDelete: Cascade) 
+  updatedAt   DateTime      @updatedAt
+  user        User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobPosts    JobPost[]
+  application Application[]
 }
 
 model Application {
-  id        Int      @id @default(autoincrement())
-  profileId Int
-  jobPostId Int
-  profile   Profile  @relation(fields: [profileId], references: [id])
-  jobPost   JobPost  @relation(fields: [jobPostId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         Int      @id @default(autoincrement())
+  profileId  Int
+  jobPostId  Int
+  employerId Int
+  employer   Employer @relation(fields: [employerId], references: [id])
+  profile    Profile  @relation(fields: [profileId], references: [id])
+  jobPost    JobPost  @relation(fields: [jobPostId], references: [id])
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
 
 model SavedJob {
@@ -111,18 +89,79 @@ model SavedJob {
 }
 
 model PastSearch {
-  id         Int      @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
   profileId Int
   profile   Profile  @relation(fields: [profileId], references: [id])
-  query      String
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  query     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-enum Role{
+enum Role {
   Candidate
   Employer
 }
+
+enum JobLevel {
+  Senior_Management
+  Middle_Management
+  Manager
+  Professional
+  Senior_Executive
+  Junior_Executive
+  Non_Executive
+  Fresh_Entry_Level
+}
+
+enum JobFunction {
+  Administration_Office
+  Arts_and_Culture
+  Board_Member
+  Business_Corporate_Services
+  Client_Customer_Services
+  Communications
+  Construction_Works_Engineering
+  Education_Curriculum_and_Teaching
+  Environment_Conservation_and_NRM
+  Facility_Grounds_Management_and_Maintenance
+  Finance_Management
+  Health_Medical_and_Nursing_Management
+  HR_Training_and_Organisational_Development
+  Information_and_Communications_Technology
+  Information_Services_Statistics_Records_Archives
+  Infrastructure_Management_Transport_Utilities
+  Legal_Officers_and_Practitioners
+  Librarians_and_Library_Management
+  Management
+  Marketing
+  Risk_Management
+  Operations_Management
+  Planning_Policy_Strategy
+  Printing_Design_Publishing_Web
+  Projects_Programs_and_Advisors
+  Property_Assets_and_Fleet_Management
+  Public_Relations_and_Media
+  Purchasing_and_Procurement
+  Quality_Management
+  Science_and_Technical_Research_and_Development
+  Security_and_Law_Enforcement
+  Service_Delivery
+  Sport_and_Recreation
+  Travel_Accommodation_Tourism
+  Wellbeing_Community_Social_Services
+}
+
+enum Employment {
+  Permanent
+  Full_Time
+  Part_Time
+  Contract
+  Flexi
+  Temporary
+  Freelance
+  Intership_Attachment
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
