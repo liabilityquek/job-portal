@@ -2,7 +2,8 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 const Yup = require("yup");
 
-const getAllJobPostWithQuery = async (req, res) => { //done
+const getAllJobPostWithQuery = async (req, res) => {
+  //done
   const title = req.query.title;
   try {
     const findJob = await prisma.JobPost.findMany({
@@ -21,10 +22,10 @@ const getAllJobPostWithQuery = async (req, res) => { //done
   }
 };
 
-const getAllJobPost = async (req, res) => { //done
+const getAllJobPost = async (req, res) => {
+  //done
   try {
-    const findJob = await prisma.JobPost.findMany({
-    });
+    const findJob = await prisma.JobPost.findMany({});
     res.status(200).json(findJob);
   } catch (e) {
     console.log("error", e);
@@ -33,7 +34,8 @@ const getAllJobPost = async (req, res) => { //done
   }
 };
 
-const createApplication = async (req, res) => {  //done
+const createApplication = async (req, res) => {
+  //done
   const { profileId, jobPostId, employerId } = req.params;
   const findProfile = await prisma.Profile.findUnique({
     where: {
@@ -50,7 +52,7 @@ const createApplication = async (req, res) => {  //done
       data: {
         profileId: Number(profileId),
         jobPostId: Number(jobPostId),
-        employerId: Number(employerId)
+        employerId: Number(employerId),
       },
     });
 
@@ -61,11 +63,19 @@ const createApplication = async (req, res) => {  //done
   }
 };
 
-const createProfile = async (req, res) => { //done
-  const { salary, qualification, experience, skills, resumeUrl, coverLetterUrl } = req.body;
-  const { userId } = req.params
+const createProfile = async (req, res) => {
+  //done
+  const {
+    salary,
+    qualification,
+    experience,
+    skills,
+    resumeUrl,
+    coverLetterUrl,
+  } = req.body;
+  const { userId } = req.params;
   try {
-      const existingProfile = await prisma.Profile.findUnique({
+    const existingProfile = await prisma.Profile.findUnique({
       where: {
         id: Number(userId),
       },
@@ -134,13 +144,55 @@ const createProfile = async (req, res) => { //done
   }
 };
 
+const updateProfile = async (req, res) => {
+  const { userId } = req.params;
+  const { salary, skills, resumeUrl, coverLetterUrl, isOpentoWork } = req.body;
+
+  const existingProfile = await prisma.Profile.findUnique({
+    where: { userId: Number(userId) },
+  });
+
+  if (!existingProfile) {
+    return res.status(404).send("Profile not found");
+  }
+  
+  const skillsArray = Array.isArray(skills) ? skills : [];
+
+  try {
+    const updatedProfile = await prisma.Profile.update({
+      where: {
+        userId: Number(userId),
+      },
+      data: {
+        salary,
+        resumeUrl,
+        coverLetterUrl,
+        isOpentoWork,
+        skills: {
+          connectOrCreate: skillsArray.map((skill) => ({
+            where: { name: skill },
+            create: { name: skill },
+          })),
+        },
+      },
+    });
+
+    res.status(200).json(updatedProfile);
+  } catch (e) {
+    console.log("error: ", e);
+    res.status(500).send("Error updating profile");
+  }
+};
+
 const getSingleJobPost = async (req, res) => {
-  const { id, postedBy } = req.params;
+  const { id } = req.params;
   try {
     const findJob = await prisma.JobPost.findUnique({
       where: {
-        postedBy: Number(postedBy),
         id: Number(id),
+      },
+      include: {
+        employer: true,
       },
     });
     if (!findJob) {
@@ -159,5 +211,6 @@ module.exports = {
   createApplication,
   getSingleJobPost,
   createProfile,
-  getAllJobPost
+  getAllJobPost,
+  updateProfile,
 };

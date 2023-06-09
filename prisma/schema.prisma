@@ -208,6 +208,7 @@ enum StudyField{
   Agriculture_Forestry_Fisheries_and_Fish_Hunting
   Accountancy
   Computer_Science
+  Electrical_Engineering
 }
 
 datasource db {
