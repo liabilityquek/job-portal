@@ -302,9 +302,9 @@ const getSingleJobPost = async (req, res) => {
     res.status(500).send("Error showing all jobs found");
   }
 };
-const getJobPostApplicationWithSkills = async (req, res) => {
+const getJobPostApplicationWithSkills = async (req, res) => { //done
   const { employerId, id } = req.params;
-  const skill = req.query.skill;
+  // const skill = req.query.skill;
 
   if (!employerId) {
     return res.send(401).json({
@@ -313,48 +313,36 @@ const getJobPostApplicationWithSkills = async (req, res) => {
   }
 
   try {
-    const jobPost = await prisma.JobPost.findUnique({
+    const applicantsAppliedToJobPost = await prisma.JobPost.findUnique({
       where: {
         id: Number(id),
       },
       include: {
         applications: {
           include: {
-                profile: {
-                  include: {
-                    skills: true,
-                    user: true,
-                  },
-                },
-          },
-        },
+            profile: {
+              include: {
+                skills: true,
+                user: true,
+              }
+            }
+          }
+        }
       },
     });
-    if (!jobPost) {
+    if (!applicantsAppliedToJobPost) {
       return res
         .status(404)
         .json({ error: `Job post with id ${id} not found.` });
     }
 
-    if (jobPost.employerId !== Number(employerId)) {
+    if (applicantsAppliedToJobPost.employerId !== Number(employerId)) {
       return res
         .status(403)
         .json({ error: "You are not allowed to access this job post" });
     }
 
-    const applicationsWithDesiredSkill = [];
-    for (let i = 0; i < jobPost.applications.length; i++) {
-      const application = jobPost.applications[i];
-      for (let j = 0; j < application.user.profile.skills.length; j++) {
-        const candidateSkill = application.user.profile.skills[j];
-        if (candidateSkill.name === skill) {
-          applicationsWithDesiredSkill.push(application);
-          break;
-        }
-      }
-    }
-
-    res.status(200).json(applicationsWithDesiredSkill);
+    res.status(200).json(applicantsAppliedToJobPost);
   } catch (e) {
     console.log("error", e);
     res

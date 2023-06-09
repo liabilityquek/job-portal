@@ -134,7 +134,7 @@ const createProfile = async (req, res) => { //done
   }
 };
 
-const getJobPost = async (req, res) => {
+const getSingleJobPost = async (req, res) => {
   const { id, postedBy } = req.params;
   try {
     const findJob = await prisma.JobPost.findUnique({
@@ -157,7 +157,7 @@ const getJobPost = async (req, res) => {
 module.exports = {
   getAllJobPostWithQuery,
   createApplication,
-  getJobPost,
+  getSingleJobPost,
   createProfile,
   getAllJobPost
 };
