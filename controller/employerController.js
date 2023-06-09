@@ -320,15 +320,12 @@ const getJobPostApplicationWithSkills = async (req, res) => {
       include: {
         applications: {
           include: {
-            user: {
-              include: {
                 profile: {
                   include: {
                     skills: true,
+                    user: true,
                   },
                 },
-              },
-            },
           },
         },
       },
@@ -374,25 +371,25 @@ const getAllCandidates = async (req, res) => {
       },
       include: {
         user: true,
+        skills: true
+        
       },
-      AND:[
-        {
-          roles:{
-            contains: 'Candidate'
-          }
-        }
-      ]
+      // AND:[
+      //   {
+      //     roles:{
+      //       contains: 'Candidate'
+      //     }
+      //   }
+      // ]
     });
 
-    // const showAllCandidates = profiles.filter(profile => 
-    //   profile.user && profile.user.roles && profile.user.roles.includes('Candidate')
-    // );
+    const showAllCandidates = profiles.filter(profile =>  profile.user.roles.includes('Candidate'));
 
-    if (profiles.length === 0) {
+    if (showAllCandidates.length === 0) {
       return res.status(200).json({ message: "No candidates found" });
     }
 
-    res.status(200).json(profiles);
+    res.status(200).json(showAllCandidates);
   } catch (e) {
     console.error(e);
     res
