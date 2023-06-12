@@ -250,4 +250,4 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 
-.txt
+reference.txt

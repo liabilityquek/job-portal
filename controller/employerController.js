@@ -210,6 +210,14 @@ const amendJobPost = async (req, res) => {
     return res.status(403).send("You are not allowed to amend this job post");
   }
   try {
+    const schema = Yup.object().shape({
+      title: Yup.string().required("This field is required"),
+      description: Yup.string().required("This field is required"),
+      salary: Yup.string().required("This field is required"),
+      requirements: Yup.string().required("This field is required"),
+    });
+
+    await schema.validate(req.body);
     const amendJob = await prisma.JobPost.update({
       where: {
         id: Number(id),
@@ -234,6 +242,10 @@ const amendJobPost = async (req, res) => {
     });
     res.status(200).json(amendJob);
   } catch (e) {
+    if (e instanceof Yup.ValidationError) {
+      // If the error is a Yup error, return a 400 status with the validation error message
+      return res.status(400).json({ error: e.errors });
+    }
     console.log("error", e);
     res.status(500).send("Error updating job post");
   }

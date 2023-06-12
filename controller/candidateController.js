@@ -155,7 +155,7 @@ const updateProfile = async (req, res) => {
   if (!existingProfile) {
     return res.status(404).send("Profile not found");
   }
-  
+
   const skillsArray = Array.isArray(skills) ? skills : [];
 
   try {
@@ -206,6 +206,256 @@ const getSingleJobPost = async (req, res) => {
   }
 };
 
+const delQualification = async (req, res) => {
+  const { profileId, qualificationId } = req.params;
+
+  const existingProfile = await prisma.Profile.findUnique({
+    where: { id: Number(profileId) },
+  });
+
+  if (!existingProfile) {
+    return res.status(404).send("Profile not found");
+  }
+
+  try {
+    const deletedQualification = await prisma.Qualification.delete({
+      where: {
+        id: Number(qualificationId),
+      },
+    });
+
+    res.status(200).json(deletedQualification);
+  } catch (e) {
+    console.log("error: ", e);
+    res.status(500).send("Error deleting qualification");
+  }
+};
+
+const delExperience = async (req, res) => {
+  const { profileId, experienceId } = req.params;
+
+  const existingProfile = await prisma.Profile.findUnique({
+    where: { id: Number(profileId) },
+  });
+
+  if (!existingProfile) {
+    return res.status(404).send("Profile not found");
+  }
+
+  try {
+    const deletedExperience = await prisma.Experience.delete({
+      where: {
+        id: Number(experienceId),
+      },
+    });
+
+    res.status(200).json(deletedExperience);
+  } catch (e) {
+    console.log("error: ", e);
+    res.status(500).send("Error deleting experience");
+  }
+};
+
+const amendQualification = async (req, res) => {
+  const { profileId, qualificationId } = req.params;
+  const { school, studyField, yearObtain, qualiType, qualiName } = req.body;
+  const existingProfile = await prisma.Profile.findUnique({
+    where: { id: Number(profileId) },
+  });
+
+  if (!existingProfile) {
+    return res.status(404).send("Profile not found");
+  }
+
+  try {
+    const schema = Yup.object().shape({
+      school: Yup.string().required("This field is required"),
+      studyField: Yup.string().required("This field is required"),
+      yearObtain: Yup.string().required("This field is required"),
+      qualiType: Yup.string().required("This field is required"),
+      qualiName: Yup.string().required("This field is required"),
+    });
+
+    await schema.validate(req.body);
+    const editQualification = await prisma.Qualification.update({
+      where: {
+        id: Number(qualificationId),
+      },
+      data: {
+        school,
+        studyField,
+        yearObtain,
+        qualiType,
+        qualiName,
+      },
+    });
+
+    res.status(200).json(editQualification);
+  } catch (e) {
+    if (e instanceof Yup.ValidationError) {
+      // If the error is a Yup error, return a 400 status with the validation error message
+      return res.status(400).json({ error: e.errors });
+    }
+    console.log("error: ", e);
+    res.status(500).send("Error amending qualification");
+  }
+};
+
+const amendExperience = async (req, res) => {
+  const { profileId, experienceId } = req.params;
+  const { companyName, jobTitle, industry, employment, workFrom, workTo, jobDesc } = req.body
+
+  const existingProfile = await prisma.Profile.findUnique({
+    where: { id: Number(profileId) },
+  });
+
+  if (!existingProfile) {
+    return res.status(404).send("Profile not found");
+  }
+
+  try {
+    const schema = Yup.object().shape({
+      companyName: Yup.string().required("This field is required"),
+      jobTitle: Yup.string().required("This field is required"),
+      industry: Yup.string().required("This field is required"),
+      employment: Yup.string().required("This field is required"),
+      workFrom: Yup.string().required("This field is required"),
+      workTo: Yup.string().required("This field is required"),
+      jobDesc: Yup.string(),
+    });
+
+    await schema.validate(req.body);
+    const editExperience = await prisma.Experience.update({
+      where: {
+        id: Number(experienceId),
+      },
+      data: {
+        companyName,
+        jobTitle,
+        industry,
+        employment,
+        workFrom,
+        workTo,
+        jobDesc
+      }
+    });
+
+    res.status(200).json(editExperience);
+  } catch (e) {
+    if (e instanceof Yup.ValidationError) {
+      // If the error is a Yup error, return a 400 status with the validation error message
+      return res.status(400).json({ error: e.errors });
+    }
+    console.log("error: ", e);
+    res.status(500).send("Error deleting experience");
+  }
+};
+
+const createQualification = async (req, res) => {
+  const { profileId } = req.params;
+  const { school, studyField, yearObtain, qualiType, qualiName } = req.body;
+
+  const existingProfile = await prisma.Profile.findUnique({
+    where: { id: Number(profileId) },
+  });
+
+  if (!existingProfile) {
+    return res.status(404).send("Profile not found");
+  }
+
+  try {
+    const schema = Yup.object().shape({
+      school: Yup.string().required("This field is required"),
+      studyField: Yup.string().required("This field is required"),
+      yearObtain: Yup.string().required("This field is required"),
+      qualiType: Yup.string().required("This field is required"),
+      qualiName: Yup.string().required("This field is required"),
+    });
+
+    await schema.validate(req.body);
+
+    const newQualification = await prisma.Qualification.create({
+      data: {
+        school,
+        studyField,
+        yearObtain,
+        qualiName,
+        qualiType,
+        profileId: Number(profileId),
+      },
+    });
+
+    res.status(201).json(newQualification);
+  } catch (e) {
+    if (e instanceof Yup.ValidationError) {
+      // If the error is a Yup error, return a 400 status with the validation error message
+      return res.status(400).json({ error: e.errors });
+    }
+    console.log("error: ", e);
+    res.status(500).send("Error creating new qualification");
+  }
+};
+
+const createExperience = async (req, res) => {
+  const { profileId } = req.params;
+  const { companyName, jobTitle, industry, employment, workFrom, workTo, jobDesc } = req.body
+
+  const existingProfile = await prisma.Profile.findUnique({
+    where: { id: Number(profileId) },
+  });
+
+  if (!existingProfile) {
+    return res.status(404).send("Profile not found");
+  }
+
+  const findExistingExperience = await prisma.Experience.findUnique({
+    where: {
+      companyName:companyName,
+      jobTitle: jobTitle,
+    },
+  });
+
+  if (findExistingExperience) {
+    return res.status(400).send(`Duplicate record of experience: ${companyName}, ${jobTitle}`);
+  }
+
+  try {
+    const schema = Yup.object().shape({
+      companyName: Yup.string().required("This field is required"),
+      jobTitle: Yup.string().required("This field is required"),
+      industry: Yup.string().required("This field is required"),
+      employment: Yup.string().required("This field is required"),
+      workFrom: Yup.string().required("This field is required"),
+      workTo: Yup.string().required("This field is required"),
+      jobDesc: Yup.string(),
+    });
+
+    await schema.validate(req.body);
+
+    const newExperience = await prisma.Experience.create({
+      data: {
+        companyName,
+        jobTitle,
+        industry,
+        employment,
+        workFrom,
+        workTo,
+        jobDesc,
+        profileId: Number(profileId),
+      },
+    });
+
+    res.status(201).json(newExperience);
+  } catch (e) {
+    if (e instanceof Yup.ValidationError) {
+      // If the error is a Yup error, return a 400 status with the validation error message
+      return res.status(400).json({ error: e.errors });
+    }
+    console.log("error: ", e);
+    res.status(500).send("Error creating new experience");
+  }
+};
+
 module.exports = {
   getAllJobPostWithQuery,
   createApplication,
@@ -213,4 +463,10 @@ module.exports = {
   createProfile,
   getAllJobPost,
   updateProfile,
+  delExperience,
+  delQualification,
+  amendQualification,
+  amendExperience,
+  createQualification,
+  createExperience
 };
