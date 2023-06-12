@@ -211,10 +211,10 @@ const amendJobPost = async (req, res) => {
   }
   try {
     const schema = Yup.object().shape({
-      title: Yup.string().required("This field is required"),
-      description: Yup.string().required("This field is required"),
-      salary: Yup.string().required("This field is required"),
-      requirements: Yup.string().required("This field is required"),
+      title: Yup.string(),
+      description: Yup.string(),
+      salary: Yup.string(),
+      requirements: Yup.string(),
     });
 
     await schema.validate(req.body);

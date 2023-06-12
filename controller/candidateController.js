@@ -269,11 +269,11 @@ const amendQualification = async (req, res) => {
 
   try {
     const schema = Yup.object().shape({
-      school: Yup.string().required("This field is required"),
-      studyField: Yup.string().required("This field is required"),
-      yearObtain: Yup.string().required("This field is required"),
-      qualiType: Yup.string().required("This field is required"),
-      qualiName: Yup.string().required("This field is required"),
+      school: Yup.string(),
+      studyField: Yup.string(),
+      yearObtain: Yup.string(),
+      qualiType: Yup.string(),
+      qualiName: Yup.string(),
     });
 
     await schema.validate(req.body);
@@ -315,12 +315,12 @@ const amendExperience = async (req, res) => {
 
   try {
     const schema = Yup.object().shape({
-      companyName: Yup.string().required("This field is required"),
-      jobTitle: Yup.string().required("This field is required"),
-      industry: Yup.string().required("This field is required"),
-      employment: Yup.string().required("This field is required"),
-      workFrom: Yup.string().required("This field is required"),
-      workTo: Yup.string().required("This field is required"),
+      companyName: Yup.string(),
+      jobTitle: Yup.string(),
+      industry: Yup.string(),
+      employment: Yup.string(),
+      workFrom: Yup.string(),
+      workTo: Yup.string(),
       jobDesc: Yup.string(),
     });
 
@@ -408,7 +408,7 @@ const createExperience = async (req, res) => {
     return res.status(404).send("Profile not found");
   }
 
-  const findExistingExperience = await prisma.Experience.findUnique({
+  const findExistingExperience = await prisma.Experience.findFirst({
     where: {
       companyName:companyName,
       jobTitle: jobTitle,
