@@ -15,4 +15,8 @@ router.put("/amend-profile-experience/:profileId/:experienceId", candidateContro
 router.put("/amend-profile-qualification/:profileId/:qualificationId", candidateController.amendQualification);
 router.post("/create-profile-qualification/:profileId", candidateController.createQualification);
 router.post("/create-profile-experience/:profileId", candidateController.createExperience);
+router.post("/new-saved-job/:profileId/:jobPostId", candidateController.createSavedJob);
+router.delete("/delete-saved-job/:profileId/:jobPostId", candidateController.delSavedJob);
+router.get("/job-posts-query/:profileId", candidateController.getAllJobPostWithQueryAndSavingQuery);
+router.get("/past-search/:profileId", candidateController.getPastSearchFromProfile);
 module.exports = router;

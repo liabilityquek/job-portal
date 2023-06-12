@@ -5,6 +5,7 @@ const Yup = require("yup");
 const getAllJobPostWithQuery = async (req, res) => {
   //done
   const title = req.query.title;
+
   try {
     const findJob = await prisma.JobPost.findMany({
       where: {
@@ -14,6 +15,49 @@ const getAllJobPostWithQuery = async (req, res) => {
         },
       },
     });
+
+    res.status(200).json(findJob);
+  } catch (e) {
+    console.log("error", e);
+    res.status(500).send("Error getting job post");
+    res.status(404).send(e);
+  }
+};
+
+const getAllJobPostWithQueryAndSavingQuery = async (req, res) => {
+  //done
+  const title = req.query.title;
+  const { profileId } = req.params;
+
+  const existingProfile = await prisma.Profile.findUnique({
+    where: { id: Number(profileId) },
+  });
+
+  try {
+    const findJob = await prisma.JobPost.findMany({
+      where: {
+        title: {
+          contains: title,
+          mode: "insensitive",
+        },
+      },
+    });
+
+    const findExistingPastQuery = await prisma.PastSearch.findFirst({
+      where:{
+        query: title
+      }
+    })
+
+    if(existingProfile && !findExistingPastQuery){
+      await prisma.PastSearch.create({
+        data: {
+          query: title,
+          profileId: Number(profileId),
+        },
+      });
+    }
+
     res.status(200).json(findJob);
   } catch (e) {
     console.log("error", e);
@@ -303,7 +347,15 @@ const amendQualification = async (req, res) => {
 
 const amendExperience = async (req, res) => {
   const { profileId, experienceId } = req.params;
-  const { companyName, jobTitle, industry, employment, workFrom, workTo, jobDesc } = req.body
+  const {
+    companyName,
+    jobTitle,
+    industry,
+    employment,
+    workFrom,
+    workTo,
+    jobDesc,
+  } = req.body;
 
   const existingProfile = await prisma.Profile.findUnique({
     where: { id: Number(profileId) },
@@ -336,8 +388,8 @@ const amendExperience = async (req, res) => {
         employment,
         workFrom,
         workTo,
-        jobDesc
-      }
+        jobDesc,
+      },
     });
 
     res.status(200).json(editExperience);
@@ -398,7 +450,15 @@ const createQualification = async (req, res) => {
 
 const createExperience = async (req, res) => {
   const { profileId } = req.params;
-  const { companyName, jobTitle, industry, employment, workFrom, workTo, jobDesc } = req.body
+  const {
+    companyName,
+    jobTitle,
+    industry,
+    employment,
+    workFrom,
+    workTo,
+    jobDesc,
+  } = req.body;
 
   const existingProfile = await prisma.Profile.findUnique({
     where: { id: Number(profileId) },
@@ -410,13 +470,15 @@ const createExperience = async (req, res) => {
 
   const findExistingExperience = await prisma.Experience.findFirst({
     where: {
-      companyName:companyName,
+      companyName: companyName,
       jobTitle: jobTitle,
     },
   });
 
   if (findExistingExperience) {
-    return res.status(400).send(`Duplicate record of experience: ${companyName}, ${jobTitle}`);
+    return res
+      .status(400)
+      .send(`Duplicate record of experience: ${companyName}, ${jobTitle}`);
   }
 
   try {
@@ -456,6 +518,121 @@ const createExperience = async (req, res) => {
   }
 };
 
+const createSavedJob = async (req, res) => {
+  const { profileId, jobPostId } = req.params;
+
+  const existingProfile = await prisma.Profile.findUnique({
+    where: { id: Number(profileId) },
+  });
+
+  if (!existingProfile) {
+    return res.status(404).send("Profile not found");
+  }
+
+  const findExistingSavedJob = await prisma.SavedJob.findFirst({
+    where: {
+      jobPostId: Number(jobPostId),
+      profileId: Number(profileId),
+    },
+    include: {
+      jobPost: true,
+    },
+  });
+
+  if (findExistingSavedJob) {
+    // console.log(JSON.stringify(findExistingSavedJob, null, 2))
+    return res
+      .status(400)
+      .send(`Job post : ${findExistingSavedJob.jobPost.title} has already been saved`);
+  }
+
+  try {
+    const newSavedJob = await prisma.SavedJob.create({
+      data: {
+        jobPostId: Number(jobPostId),
+        profileId: Number(profileId),
+      },
+      include: {
+        jobPost: true,
+      },
+    });
+
+    res.status(201).json(newSavedJob);
+  } catch (e) {
+    console.log("error: ", e);
+    res.status(500).send("Error creating new experience");
+  }
+};
+
+const delSavedJob = async (req, res) => {
+  const { profileId, jobPostId } = req.params;
+
+  const existingProfile = await prisma.Profile.findUnique({
+    where: { id: Number(profileId) },
+  });
+
+  if (!existingProfile) {
+    return res.status(404).send("Profile not found");
+  }
+
+  const findExistingSavedJob = await prisma.SavedJob.findFirst({
+    where: {
+      jobPostId: Number(jobPostId),
+      profileId: Number(profileId),
+    },
+    include: {
+      jobPost: true,
+    },
+  });
+
+  if (!findExistingSavedJob) {
+    return res
+      .status(400)
+      .send(`Job post Id : ${jobPostId} is not in your saved list`);
+  }
+
+  try {
+    const deleteSavedJob = await prisma.SavedJob.delete({
+      where: {
+        id: findExistingSavedJob.id,
+      },
+      include: {
+        jobPost: true,
+      },
+    });
+
+    res.status(201).json(deleteSavedJob);
+  } catch (e) {
+    console.log("error: ", e);
+    res.status(500).send("Error deleting new experience");
+  }
+};
+
+const getPastSearchFromProfile = async (req, res) => {
+  const { profileId } = req.params;
+
+  const existingProfile = await prisma.Profile.findUnique({
+    where: { id: Number(profileId) },
+  });
+
+  if (!existingProfile) {
+    return res.status(404).send("Profile not found");
+  }
+
+  try {
+    const getPastSearch = await prisma.PastSearch.findMany({
+      where: {
+        profileId: Number(profileId)
+      },
+    });
+
+    res.status(200).json(getPastSearch);
+  } catch (e) {
+    console.log("error", e);
+    res.status(500).send("Error displaying past searches");
+  }
+};
+
 module.exports = {
   getAllJobPostWithQuery,
   createApplication,
@@ -468,5 +645,9 @@ module.exports = {
   amendQualification,
   amendExperience,
   createQualification,
-  createExperience
+  createExperience,
+  createSavedJob,
+  delSavedJob,
+  getAllJobPostWithQueryAndSavingQuery,
+  getPastSearchFromProfile
 };
