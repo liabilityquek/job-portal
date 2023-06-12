@@ -178,8 +178,42 @@ const resetPassword = async (req, res) => {
   }
 };
 
+const isAuth = async(req, res, next) => {
+  const token = req.headers.authorization.replace(/"/g, "").split(" ")[1];
+
+  if (token) {
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET);
+
+      const employer = await prisma.User.findUnique({ email: decoded.userId.email });
+      
+      if (employer) {
+        req.employer = employer;
+        next();
+      } else {
+        res.status(403).send("Forbidden");
+      }
+    } catch (error) {
+      res.status(401).send("Invalid token");
+      // console.log(error)
+    }
+  } else {
+    res.status(401).send("Unauthorized");
+  }
+}
+
+const requireRole = (role) => (req, res, next) => {
+  if (!req.employer.roles.includes(role)) {
+      console.log(`req.employer.roles: ${req.employer.roles}`);
+    return res.status(403).json({ message: 'Forbidden' });
+  }
+  next();
+};
+
 module.exports = {
   createUser,
   login,
   resetPassword,
+  isAuth,
+  requireRole
 };

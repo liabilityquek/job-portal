@@ -119,6 +119,17 @@ const createProfile = async (req, res) => {
   } = req.body;
   const { userId } = req.params;
   try {
+    const schema = Yup.object().shape({
+      salary: Yup.string(),
+      qualification: Yup.string(),
+      experience: Yup.string(),
+      skills: Yup.string(),
+      resumeUrl: Yup.string(),
+      coverLetterUrl: Yup.string(),
+    });
+
+    await schema.validate(req.body);
+
     const existingProfile = await prisma.Profile.findUnique({
       where: {
         id: Number(userId),
@@ -183,6 +194,10 @@ const createProfile = async (req, res) => {
 
     res.status(201).json(newProfile);
   } catch (e) {
+    if (e instanceof Yup.ValidationError) {
+      // If the error is a Yup error, return a 400 status with the validation error message
+      return res.status(400).json({ error: e.errors });
+    }
     console.log("error: ", e);
     res.status(500).send("Error creating employer profile");
   }
@@ -203,6 +218,14 @@ const updateProfile = async (req, res) => {
   const skillsArray = Array.isArray(skills) ? skills : [];
 
   try {
+    const schema = Yup.object().shape({
+      salary: Yup.string(),
+      skills: Yup.string(),
+      resumeUrl: Yup.string(),
+      coverLetterUrl: Yup.string(),
+    });
+    await schema.validate(req.body);
+
     const updatedProfile = await prisma.Profile.update({
       where: {
         userId: Number(userId),
@@ -223,6 +246,10 @@ const updateProfile = async (req, res) => {
 
     res.status(200).json(updatedProfile);
   } catch (e) {
+    if (e instanceof Yup.ValidationError) {
+      // If the error is a Yup error, return a 400 status with the validation error message
+      return res.status(400).json({ error: e.errors });
+    }
     console.log("error: ", e);
     res.status(500).send("Error updating profile");
   }

@@ -1,14 +1,17 @@
 const express = require("express");
 const router = express.Router();
 const candidateController = require("../controller/candidateController");
-// const {isAuth} = require("../controllers/users");
+// const { isAuth, requireRole } = require("../controller/loginController")
+const { uploadResume, uploadCover } = require('../controller/upload')
+
+// router.get("/job-posts-query", isAuth, requireRole(['Candidate']), candidateController.getAllJobPostWithQuery);
 
 router.get("/job-posts-query", candidateController.getAllJobPostWithQuery);
 router.get("/job-posts", candidateController.getAllJobPost);
 router.post("/create-application/:profileId/:jobPostId/:employerId", candidateController.createApplication);
-router.post("/create-profile/:userId", candidateController.createProfile);
+router.post("/create-profile/:userId", uploadResume, uploadCover, candidateController.createProfile);
 router.get("/job-posts/:id", candidateController.getSingleJobPost);
-router.put("/update-profile/:userId", candidateController.updateProfile);
+router.put("/update-profile/:userId", uploadResume, uploadCover, candidateController.updateProfile);
 router.delete("/delete-profile-experience/:profileId/:experienceId", candidateController.delExperience);
 router.delete("/delete-profile-qualification/:profileId/:qualificationId", candidateController.delQualification);
 router.put("/amend-profile-experience/:profileId/:experienceId", candidateController.amendExperience);
